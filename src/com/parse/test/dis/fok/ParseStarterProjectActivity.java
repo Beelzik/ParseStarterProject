@@ -8,8 +8,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +25,7 @@ import com.parse.ParsePush;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 import com.parse.test.dis.fok.R;
+import com.parse.test.dis.fok.adapter.ParseAdapter;
 
 public class ParseStarterProjectActivity extends Activity implements OnClickListener {
 
@@ -31,6 +35,9 @@ public class ParseStarterProjectActivity extends Activity implements OnClickList
 	TextView tvAnswerFind;
 	Button btnPush;
 	EditText edNotify;
+	ListView lvParseDataList;
+	
+	ParseAdapter<ParseObject> adapter;
 
 	
 	
@@ -40,6 +47,7 @@ public class ParseStarterProjectActivity extends Activity implements OnClickList
 
 		ParseAnalytics.trackAppOpened(getIntent());
 		
+		lvParseDataList= (ListView) findViewById(R.id.lvParseDataList);
 		tvAnswerFetch=(TextView) findViewById(R.id.tvAnswerFetch);
 		tvAnswerFind=(TextView) findViewById(R.id.tvAnswerFind);
 		edNotify=(EditText) findViewById(R.id.edNotify);
@@ -47,7 +55,20 @@ public class ParseStarterProjectActivity extends Activity implements OnClickList
 		btnPush.setOnClickListener(this);
 		
 		
+		adapter= new ParseAdapter<ParseObject>(this);
+		lvParseDataList.setAdapter(adapter);
 		
+		ParseQuery<ParseObject> query= ParseQuery.getQuery(firstParseObjName);
+		query.findInBackground(new FindCallback<ParseObject>() {
+			
+			@Override
+			public void done(List<ParseObject> objects, ParseException e) {
+			
+				
+				adapter.setData(objects);
+				adapter.notifyDataSetChanged();
+			}
+		});
 	
 	}
 
@@ -78,6 +99,8 @@ public class ParseStarterProjectActivity extends Activity implements OnClickList
 							@Override
 							public void done(List<ParseObject> objects, ParseException e) {
 								
+								adapter.setData(objects);
+								adapter.notifyDataSetChanged();
 								if (e==null) {
 									ParseObject lastParseObj=objects.get(objects.size()-1);
 									String answer=lastParseObj.getString("name");
